@@ -9,6 +9,7 @@ Overview – This project investigates how the interplay between chronic inflamm
 Key Methodologies – Spatial Metagenomics (ProxiMeta Hi-C to link ARGs to specific bacterial hosts) – Immune Profiling (Meso Scale Discovery & custom LE Assays for barrier integrity) – Data Integration (R-based systems biology to correlate cytokine profiles with AMR persistence)
 
 Repository Structure
-1. thecleanup: Scripts for processing/cleaning TwinsUK and POIROT metadata.
-2. stats: R scripts for Spearman correlations and diversity indexing.
-3. nowyouseeme: ggplot2 code for publication-standard figures.
+1. pipeline: HPC bash scripts (trimmomatic, BowTie2 and MetaPhlAn - POIROT)
+2. thecleanup: Scripts for processing/cleaning TwinsUK and POIROT metadata.
+3. stats: R scripts for Spearman correlations and diversity indexing.
+4. nowyouseeme: ggplot2 code for publication-standard figures.
