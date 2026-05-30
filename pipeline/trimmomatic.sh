@@ -5,7 +5,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
-#SBATCH --time=04:00:00
+#SBATCH --time=12:00:00
 
 # Load Trimmomatic module
 module load trimmomatic/0.39-gcc-13.2.0
@@ -20,6 +20,10 @@ for R1 in $RAW/*_R1.fastq.gz; do
     SAMPLE=$(basename $R1 _R1.fastq.gz)
     R2=$RAW/${SAMPLE}_R2.fastq.gz
 
+if [ -f "$OUT/${SAMPLE}_R1_paired.fastq.gz" ]; then
+        echo "Skipping $SAMPLE - already done"
+        continue
+    fi
     trimmomatic PE -threads 4 \
         $R1 $R2 \
         $OUT/${SAMPLE}_R1_paired.fastq.gz \
