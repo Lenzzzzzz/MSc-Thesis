@@ -52,7 +52,16 @@ colnames(baseline)[83] <- "E_coli_copies"
 # ============================================================
 # 3. FILTER BY TREATMENT ARM
 # ============================================================
-
+# Force outcome columns to numeric
+for(col in c("E_faecalis_copies", "E_coli_copies",
+             "MELD", "Calprotectin", "faecal_ammonia",
+             "faecal_IL17A", "faecal_IL17E", "faecal_IL17F",
+             "faecal_IL21", "faecal_IL22", "faecal_IFNg",
+             "faecal_IL10", "faecal_IL1b", "faecal_IL6",
+             "faecal_TNFa", "faecal_IL12", "faecal_IL23",
+             "faecal_IL8")) {
+  baseline[[col]] <- as.numeric(as.character(baseline[[col]]))
+}
 fmt     <- baseline[which(baseline$IMP == 1), ]
 placebo <- baseline[which(baseline$IMP == 2), ]
 
