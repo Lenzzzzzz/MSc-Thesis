@@ -24,7 +24,7 @@ if [ -f "$OUT/${SAMPLE}_R1_paired.fastq.gz" ]; then
         echo "Skipping $SAMPLE - already done"
         continue
     fi
-    trimmomatic PE -threads 4 \
+    trimmomatic PE -threads 4 -phred33 \
         $R1 $R2 \
         $OUT/${SAMPLE}_R1_paired.fastq.gz \
         $OUT/${SAMPLE}_R1_unpaired.fastq.gz \
@@ -35,7 +35,7 @@ if [ -f "$OUT/${SAMPLE}_R1_paired.fastq.gz" ]; then
         SLIDINGWINDOW:4:15 \
         TRAILING:3 \
         MINLEN:36
-
+ 2>&1 | tee -a /scratch/prj/chmi_rbiome/project/logs/trimmomatic_stats.log
     echo "Finished: $SAMPLE"
 # ============================================================
 # RUN FASTQC ON TRIMMED OUTPUT
