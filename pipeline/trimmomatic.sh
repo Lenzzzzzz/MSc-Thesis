@@ -32,10 +32,29 @@ if [ -f "$OUT/${SAMPLE}_R1_paired.fastq.gz" ]; then
         $OUT/${SAMPLE}_R2_unpaired.fastq.gz \
         ILLUMINACLIP:$ADAPTERS:2:30:10 \
         LEADING:3 \
+        SLIDINGWINDOW:4:15 \
         TRAILING:3 \
         MINLEN:36
 
     echo "Finished: $SAMPLE"
+# ============================================================
+# RUN FASTQC ON TRIMMED OUTPUT
+# ============================================================
+
+module load fastqc/0.12.1-gcc-13.2.0
+
+# Create FastQC output directory
+mkdir -p /scratch/prj/chmi_rbiome/project/results/fastqc
+
+echo "Running FastQC on trimmed paired reads..."
+
+fastqc \
+    $OUT/*_R1_paired.fastq.gz \
+    $OUT/*_R2_paired.fastq.gz \
+    --outdir /scratch/prj/chmi_rbiome/project/results/fastqc \
+    --threads 4
+
+echo "FastQC complete"
 done
 
 echo "All samples complete"
