@@ -1,0 +1,18 @@
+Trimmomatic v0.39 — Quality Trimming Statistics
+POIROT Cohort (KINGCO-007) — 10 samples
+Parameters: ILLUMINACLIP:TruSeq3-PE:2:30:10 LEADING:3 SLIDINGWINDOW:4:15 TRAILING:3 MINLEN:36
+
+Sample              Input_Pairs    Both_Surviving  %Retained  Dropped  %Dropped
+AKQ014A             87108174       85516222        98.17%     401977   0.46%
+AKQ014B             78029094       76620986        98.20%     389849   0.50%
+AKQ01A              28707007       27908711        97.22%     142435   0.50%
+AKQ01B              88894007       87057017        97.93%     737477   0.83%
+AKQ02A              88058796       86273588        97.97%     547355   0.62%
+AKQ02B              114872412      111285577       96.88%     2008664  1.75%
+AKQ03A              80106982       78623517        98.15%     501619   0.63%
+AKQ03B              66420740       65187189        98.14%     353219   0.53%
+AKQ05A              108317590      105833497       97.71%     1081539  1.00%
+AKQ05B              74319881       72901898        98.09%     393927   0.53%
+
+Mean retention: 97.95%
+Range: 96.88% - 98.20%
