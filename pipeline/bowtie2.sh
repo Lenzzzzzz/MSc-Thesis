@@ -34,7 +34,7 @@ for R1 in $TRIMMED/*_R1_paired.fastq.gz; do
         -2 $R2 \
         --threads 8 \
         --sensitive \
-        --un-conc-gz $OUT/${SAMPLE}_microbial_1_%.fastq.gz \
+        --un-conc-gz $OUT/${SAMPLE}_microbial1_%.fastq.gz \
         -S /dev/null \
         2>> /scratch/prj/chmi_rbiome/project/logs/bowtie2_stats.log
 
