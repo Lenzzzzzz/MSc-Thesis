@@ -10,6 +10,8 @@
 # Load required modules
 module load bowtie2/2.5.1-gcc-13.2.0-python-3.11.6
 
+source $(conda info --base)/etc/profile.d/conda.sh
+
 # Define paths
 IN=/scratch/prj/chmi_rbiome/project/results/bowtie2
 OUT=/scratch/prj/chmi_rbiome/project/results/metaphlan
@@ -30,12 +32,14 @@ for R1 in $IN/*_unmapped_R1.fastq.gz; do
 
     echo "Processing: $SAMPLE"
 
-metaphlan $R1,$R2 \
+conda activate /scratch/prj/chmi_rbiome/project/mpa_env
+
+    metaphlan $R1,$R2 \
+        --bowtie2db $DB \
+        --index $INDEX \
         --input_type fastq \
-        --index $DB/$INDEX \
         --nproc 8 \
-        --offline \
-        --mapout $OUT/${SAMPLE}.bowtie2.bz2 \
+        --bowtie2out $OUT/${SAMPLE}.bowtie2.bz2 \
         -o $OUT/${SAMPLE}_profile.tsv
 
     echo "Finished: $SAMPLE"
