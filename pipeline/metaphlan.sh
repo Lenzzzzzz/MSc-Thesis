@@ -7,6 +7,9 @@
 #SBATCH --mem=64G
 #SBATCH --time=12:00:00
 
+# Load required modules
+module load bowtie2/2.5.1-gcc-13.2.0-python-3.11.6
+
 # Define paths
 IN=/scratch/prj/chmi_rbiome/project/results/bowtie2
 OUT=/scratch/prj/chmi_rbiome/project/results/metaphlan
