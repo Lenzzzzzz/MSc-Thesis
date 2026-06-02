@@ -14,6 +14,7 @@ module load bowtie2/2.5.1-gcc-13.2.0-python-3.11.6
 IN=/scratch/prj/chmi_rbiome/project/results/bowtie2
 OUT=/scratch/prj/chmi_rbiome/project/results/metaphlan
 DB=/scratch/prj/chmi_rbiome/databases/Jan25_metaphlan_db
+export DEFAULT_DB_FOLDER=$DB
 INDEX=mpa_vJan25_CHOCOPhlAnSGB_202503
 
 # Loop through all samples using R1 unmapped files
@@ -31,7 +32,6 @@ for R1 in $IN/*_unmapped_R1.fastq.gz; do
 
 metaphlan $R1,$R2 \
         --input_type fastq \
-        --database $DB \
         --index $INDEX \
         --nproc 8 \
         --mapout $OUT/${SAMPLE}.bowtie2.bz2 \
