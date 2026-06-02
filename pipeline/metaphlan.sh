@@ -32,8 +32,9 @@ for R1 in $IN/*_unmapped_R1.fastq.gz; do
 
 metaphlan $R1,$R2 \
         --input_type fastq \
-        --index $INDEX \
+        --index $DB/$INDEX \
         --nproc 8 \
+        --offline \
         --mapout $OUT/${SAMPLE}.bowtie2.bz2 \
         -o $OUT/${SAMPLE}_profile.tsv
 
