@@ -29,13 +29,12 @@ for R1 in $IN/*_unmapped_R1.fastq.gz; do
 
     echo "Processing: $SAMPLE"
 
-    metaphlan $R1,$R2 \
+metaphlan $R1,$R2 \
         --input_type fastq \
-        --bowtie2db $DB \
+        --database $DB \
         --index $INDEX \
         --nproc 8 \
-        --unclassified_estimation \
-        --bowtie2out $OUT/${SAMPLE}.bowtie2.bz2 \
+        --mapout $OUT/${SAMPLE}.bowtie2.bz2 \
         -o $OUT/${SAMPLE}_profile.tsv
 
     echo "Finished: $SAMPLE"
