@@ -1,3 +1,4 @@
+  /scratch/prj/chmi_rbiome/project/scripts/MSc-Thesis/pipeline/install_metaphlan.sh          
 #!/bin/bash
 #SBATCH --job-name=install_mpa
 #SBATCH --output=/scratch/prj/chmi_rbiome/project/logs/install_mpa_%j.log
@@ -26,4 +27,3 @@ echo "MetaPhlAn installation complete"
 # Test it works
 conda activate /scratch/prj/chmi_rbiome/project/mpa_env
 metaphlan --version
-
