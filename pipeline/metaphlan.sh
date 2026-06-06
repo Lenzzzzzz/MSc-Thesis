@@ -32,14 +32,12 @@ for R1 in $IN/*_unmapped_R1.fastq.gz; do
 
     echo "Processing: $SAMPLE"
 
-conda activate /scratch/prj/chmi_rbiome/project/mpa_env
-
-    metaphlan $R1,$R2 \
-        --bowtie2db $DB \
-        --index $INDEX \
+metaphlan $R1,$R2 \
         --input_type fastq \
+        --db_dir $DB \
+        --index $INDEX \
         --nproc 8 \
-        --bowtie2out $OUT/${SAMPLE}.bowtie2.bz2 \
+        --mapout $OUT/${SAMPLE}.bowtie2.bz2 \
         -o $OUT/${SAMPLE}_profile.tsv
 
     echo "Finished: $SAMPLE"
