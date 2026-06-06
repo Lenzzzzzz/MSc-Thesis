@@ -18,7 +18,7 @@ for R1 in $IN/*_unmapped_R1.fastq.gz; do
     SAMPLE=$(basename $R1 _unmapped_R1.fastq.gz)
     R2=$IN/${SAMPLE}_unmapped_R2.fastq.gz
 
-    if [ -f "$OUT/${SAMPLE}_profile.tsv" ]; then
+ if [ -f "/scratch/users/k25118483/${SAMPLE}_profile.tsv" ]; then
         echo "Skipping $SAMPLE - already done"
         continue
     fi
@@ -33,8 +33,8 @@ for R1 in $IN/*_unmapped_R1.fastq.gz; do
         --mapout $OUT/${SAMPLE}.bowtie2.bz2 \
         -o $OUT/${SAMPLE}_profile.tsv
 
+cp $OUT/${SAMPLE}_profile.tsv /scratch/users/k25118483/${SAMPLE}_profile.tsv
     echo "Finished: $SAMPLE"
 done
 
 echo "All samples complete"
-SCRIPT
