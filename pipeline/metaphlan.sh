@@ -25,15 +25,24 @@ for R1 in $IN/*_unmapped_R1.fastq.gz; do
 
     echo "Processing: $SAMPLE"
 
-    metaphlan $R1,$R2 \
-        --input_type fastq \
-        --db_dir $DB \
-        --index $INDEX \
-        --nproc 8 \
-  --mapout /scratch/users/k25118483/${SAMPLE}.bowtie2.bz2 \
-        -o /scratch/users/k25118483/${SAMPLE}_profile.tsv
+# Use existing bowtie2 mapping if available, otherwise run from fastq
+    if [ -f "/scratch/users/k25118483/${SAMPLE}.bowtie2.bz2" ]; then
+        echo "Using existing bowtie2 mapping for $SAMPLE"
+        metaphlan /scratch/users/k25118483/${SAMPLE}.bowtie2.bz2 \
+            --input_type bowtie2out \
+            --db_dir $DB \
+            --index $INDEX \
+            --nproc 8 \
+            -o /scratch/users/k25118483/${SAMPLE}_profile.tsv
+    else
+        metaphlan $R1,$R2 \
+            --input_type fastq \
+            --db_dir $DB \
+            --index $INDEX \
+            --nproc 8 \
+            --mapout /scratch/users/k25118483/${SAMPLE}.bowtie2.bz2 \
+            -o /scratch/users/k25118483/${SAMPLE}_profile.tsv
+    fi
 
  echo "Finished: $SAMPLE"
 done
-
-echo "All samples complete"
