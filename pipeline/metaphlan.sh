@@ -30,11 +30,9 @@ for R1 in $IN/*_unmapped_R1.fastq.gz; do
         --db_dir $DB \
         --index $INDEX \
         --nproc 8 \
-        --mapout $OUT/${SAMPLE}.bowtie2.bz2 \
-        -o $OUT/${SAMPLE}_profile.tsv
+ -o /scratch/users/k25118483/${SAMPLE}_profile.tsv
 
-cp $OUT/${SAMPLE}_profile.tsv /scratch/users/k25118483/${SAMPLE}_profile.tsv
-    echo "Finished: $SAMPLE"
+ echo "Finished: $SAMPLE"
 done
 
 echo "All samples complete"
