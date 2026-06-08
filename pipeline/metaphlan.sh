@@ -2,47 +2,39 @@
 #SBATCH --job-name=metaphlan
 #SBATCH --output=/scratch/prj/chmi_rbiome/project/logs/metaphlan_%j.log
 #SBATCH --error=/scratch/prj/chmi_rbiome/project/logs/metaphlan_%j.err
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=64G
-#SBATCH --time=12:00:00
+#SBATCH --time=24:00:00
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=256G
 
-module load bowtie2/2.5.1-gcc-13.2.0-python-3.11.6
+export PATH=/users/k25126777/.conda/envs/metaphlan/bin:$PATH
 
-IN=/scratch/prj/chmi_rbiome/project/results/bowtie2
-OUT=/scratch/prj/chmi_rbiome/project/results/metaphlan
 DB=/scratch/prj/chmi_rbiome/databases/Jan25_metaphlan_db
-INDEX=mpa_vJan25_CHOCOPhlAnSGB_202503
+IN=/scratch/prj/chmi_rbiome/project/results/bowtie2
+IN2=/scratch/users/k25118483/bowtie2
+OUT=/scratch/users/k25118483
 
-for R1 in $IN/*_unmapped_R1.fastq.gz; do
+mkdir -p $OUT
+
+for R1 in $IN/*_unmapped_R1.fastq.gz $IN2/*_unmapped_R1.fastq.gz; do
     SAMPLE=$(basename $R1 _unmapped_R1.fastq.gz)
-    R2=$IN/${SAMPLE}_unmapped_R2.fastq.gz
+    R2=$(dirname $R1)/${SAMPLE}_unmapped_R2.fastq.gz
 
- if [ -f "/scratch/users/k25118483/${SAMPLE}_profile.tsv" ]; then
+    if [ -f "$OUT/${SAMPLE}_profile.tsv" ]; then
         echo "Skipping $SAMPLE - already done"
         continue
     fi
 
     echo "Processing: $SAMPLE"
 
-# Use existing bowtie2 mapping if available, otherwise run from fastq
-    if [ -f "/scratch/users/k25118483/${SAMPLE}.bowtie2.bz2" ]; then
-        echo "Using existing bowtie2 mapping for $SAMPLE"
-        metaphlan /scratch/users/k25118483/${SAMPLE}.bowtie2.bz2 \
-            --input_type bowtie2out \
-            --db_dir $DB \
-            --index $INDEX \
-            --nproc 8 \
-            -o /scratch/users/k25118483/${SAMPLE}_profile.tsv
-    else
-        metaphlan $R1,$R2 \
-            --input_type fastq \
-            --db_dir $DB \
-            --index $INDEX \
-            --nproc 8 \
-            --mapout /scratch/users/k25118483/${SAMPLE}.bowtie2.bz2 \
-            -o /scratch/users/k25118483/${SAMPLE}_profile.tsv
-    fi
+    metaphlan $R1,$R2 \
+        --input_type fastq \
+        --db_dir $DB \
+        --index mpa_vJan25_CHOCOPhlAnSGB_202503 \
+        --nproc 1 \
+        --output_file $OUT/${SAMPLE}_profile.tsv \
+        --mapout $OUT/${SAMPLE}_bowtie2.bz2
 
- echo "Finished: $SAMPLE"
+    echo "Finished: $SAMPLE"
 done
+
+echo "All samples complete"
