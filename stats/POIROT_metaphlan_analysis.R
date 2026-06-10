@@ -288,3 +288,49 @@ write.csv(permanova_results,
 
 cat("PERMANOVA results saved\n")
 
+# ============================================================
+# 10. TOP SPECIES ABUNDANCE BARPLOT
+# ============================================================
+
+species$mean_abund <- rowMeans(species[,2:11])
+top15 <- species[order(species$mean_abund, decreasing=TRUE), ][1:15, ]
+top15$species_short <- gsub(".*s__", "", top15$clade_name)
+
+long_df <- data.frame()
+for(i in 1:nrow(top15)) {
+  for(j in 2:11) {
+    long_df <- rbind(long_df, data.frame(
+      species = top15$species_short[i],
+      sample = colnames(top15)[j],
+      abundance = as.numeric(top15[i,j]),
+      stringsAsFactors = FALSE
+    ))
+  }
+}
+
+long_df$timepoint <- ifelse(grepl("A$", long_df$sample),
+                             "T1 Pre-antibiotic", "T2 Post-antibiotic")
+long_df$patient <- gsub("KINGCO-007-", "", gsub("[AB]$", "", long_df$sample))
+long_df$sample_label <- paste0(long_df$patient, "\n", long_df$timepoint)
+
+species_order <- top15$species_short[order(top15$mean_abund, decreasing=TRUE)]
+long_df$species <- factor(long_df$species, levels=rev(species_order))
+
+p4 <- ggplot(long_df, aes(x=sample_label, y=abundance, fill=species)) +
+  geom_bar(stat="identity") +
+  facet_grid(~timepoint, scales="free_x", space="free_x") +
+  theme_bw() +
+  theme(axis.text.x=element_text(angle=45, hjust=1, size=7),
+        legend.text=element_text(size=7),
+        legend.key.size=unit(0.4, "cm"),
+        plot.title=element_text(hjust=0.5, face="bold"),
+        plot.subtitle=element_text(hjust=0.5, size=9)) +
+  labs(title="Top 15 Species Abundance - POIROT Cohort",
+       subtitle="Pre vs Post-antibiotic",
+       x="Sample", y="Relative Abundance (%)",
+       fill="Species")
+
+ggsave("/scratch/prj/chmi_rbiome/project/figures/POIROT_species_barplot.pdf",
+       plot=p4, width=14, height=8, dpi=300)
+
+cat("Species barplot saved\n")
