@@ -167,3 +167,78 @@ ggsave("/scratch/prj/chmi_rbiome/project/figures/POIROT_beta_diversity_PCoA.pdf"
        plot=p2, width=8, height=6, dpi=300)
 
 cat("PCoA figure saved\n")
+
+# ============================================================
+# 8. DIFFERENTIAL ABUNDANCE — WILCOXON SIGNED-RANK
+# ============================================================
+
+results_da <- data.frame(
+  species = character(), mean_T1 = numeric(),
+  mean_T2 = numeric(), log2FC = numeric(),
+  p_value = numeric(), stringsAsFactors = FALSE
+)
+
+for(i in 1:nrow(species)) {
+  T1_vals <- as.numeric(species[i, pairs$T1])
+  T2_vals <- as.numeric(species[i, pairs$T2])
+  
+  if(max(c(T1_vals, T2_vals)) > 0.1) {
+    test <- wilcox.test(T1_vals, T2_vals, paired=TRUE, exact=FALSE)
+    mean_T1 <- mean(T1_vals)
+    mean_T2 <- mean(T2_vals)
+    lfc <- log2((mean_T2 + 0.001) / (mean_T1 + 0.001))
+    
+    results_da <- rbind(results_da, data.frame(
+      species = species$clade_name[i],
+      mean_T1 = round(mean_T1, 4),
+      mean_T2 = round(mean_T2, 4),
+      log2FC = round(lfc, 3),
+      p_value = round(test$p.value, 4),
+      stringsAsFactors = FALSE
+    ))
+  }
+}
+
+results_da$p_adjusted <- round(p.adjust(results_da$p_value, method="BH"), 4)
+results_da$species_short <- gsub(".*s__", "", results_da$species)
+
+# Note: minimum achievable p-value with n=5 pairs is 0.0625
+# Statistical significance is mathematically unachievable at p<0.05
+cat("Minimum p-value achieved:", min(results_da$p_value), "\n")
+cat("Species tested:", nrow(results_da), "\n")
+
+# Save results
+write.csv(results_da,
+  "/scratch/prj/chmi_rbiome/project/results/POIROT_differential_abundance.csv",
+  row.names=FALSE)
+
+# Volcano plot
+results_da$colour <- ifelse(results_da$log2FC > 1 & results_da$p_value < 0.1,
+                             "Increased",
+                      ifelse(results_da$log2FC < -1 & results_da$p_value < 0.1,
+                             "Decreased", "Not significant"))
+
+p3 <- ggplot(results_da, aes(x=log2FC, y=-log10(p_value),
+                              colour=colour)) +
+  geom_point(alpha=0.6, size=2) +
+  geom_text(data=head(results_da[order(results_da$p_value),], 8),
+            aes(label=species_short), size=2.5, hjust=-0.1) +
+  scale_colour_manual(values=c("Increased"="#E74C3C",
+                                "Decreased"="#3498DB",
+                                "Not significant"="grey60")) +
+  geom_vline(xintercept=c(-1,1), linetype="dashed", alpha=0.5) +
+  geom_hline(yintercept=-log10(0.1), linetype="dashed", alpha=0.5) +
+  theme_bw() +
+  theme(legend.title=element_blank(),
+        plot.title=element_text(hjust=0.5, face="bold"),
+        plot.subtitle=element_text(hjust=0.5, size=9)) +
+  labs(title="Differential Abundance - POIROT Cohort",
+       subtitle="Post vs Pre-antibiotic (T2 vs T1), n=5 pairs",
+       x="log2 Fold Change (T2/T1)",
+       y="-log10(p-value)")
+
+ggsave("/scratch/prj/chmi_rbiome/project/figures/POIROT_differential_abundance.pdf",
+       plot=p3, width=10, height=7, dpi=300)
+
+cat("Volcano plot saved\n")
+
