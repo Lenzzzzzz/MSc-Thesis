@@ -242,3 +242,49 @@ ggsave("/scratch/prj/chmi_rbiome/project/figures/POIROT_differential_abundance.p
 
 cat("Volcano plot saved\n")
 
+# ============================================================
+# 9. PERMANOVA — TIMEPOINT AND PATIENT
+# ============================================================
+
+permanova_manual <- function(dist_mat, groups, n_perm=999) {
+  calc_F <- function(d, g) {
+    groups_unique <- unique(g)
+    n <- length(g)
+    SS_total <- sum(d^2) / n
+    SS_within <- 0
+    for(grp in groups_unique) {
+      idx <- which(g == grp)
+      n_grp <- length(idx)
+      if(n_grp > 1) SS_within <- SS_within + sum(d[idx,idx]^2) / n_grp
+    }
+    SS_between <- SS_total - SS_within
+    df_between <- length(groups_unique) - 1
+    df_within <- n - length(groups_unique)
+    (SS_between/df_between) / (SS_within/df_within)
+  }
+  F_obs <- calc_F(dist_mat, groups)
+  F_perm <- replicate(n_perm, calc_F(dist_mat, sample(groups)))
+  p_val <- (sum(F_perm >= F_obs) + 1) / (n_perm + 1)
+  list(F=round(F_obs,3), p=round(p_val,4))
+}
+
+timepoint_groups <- ifelse(grepl("A$", rownames(dist_mat)), "T1", "T2")
+result_tp <- permanova_manual(dist_mat, timepoint_groups)
+cat("PERMANOVA by timepoint - F:", result_tp$F, "p:", result_tp$p, "\n")
+
+patient_groups <- gsub("KINGCO-007-", "", gsub("[AB]$", "", rownames(dist_mat)))
+result_pt <- permanova_manual(dist_mat, patient_groups)
+cat("PERMANOVA by patient - F:", result_pt$F, "p:", result_pt$p, "\n")
+
+permanova_results <- data.frame(
+  test = c("Timepoint", "Patient"),
+  F_statistic = c(result_tp$F, result_pt$F),
+  p_value = c(result_tp$p, result_pt$p)
+)
+
+write.csv(permanova_results,
+  "/scratch/prj/chmi_rbiome/project/results/POIROT_PERMANOVA_results.csv",
+  row.names=FALSE)
+
+cat("PERMANOVA results saved\n")
+
