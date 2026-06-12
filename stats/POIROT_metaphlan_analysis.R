@@ -334,3 +334,73 @@ ggsave("/scratch/prj/chmi_rbiome/project/figures/POIROT_species_barplot.pdf",
        plot=p4, width=14, height=8, dpi=300)
 
 cat("Species barplot saved\n")
+
+# ============================================================
+# 11. ADDITIONAL ANALYSES — CRITICAL EVALUATION
+# ============================================================
+
+# Shannon components — richness and evenness
+richness <- function(x) sum(x > 0)
+evenness <- function(x) { h<-shannon(x); s<-richness(x); if(s>1) h/log(s) else 0 }
+
+richness_scores <- sapply(species_mat, richness)
+evenness_scores <- sapply(species_mat, evenness)
+
+div_df <- data.frame(
+  sample=names(shannon_scores),
+  shannon=round(shannon_scores,3),
+  richness=richness_scores,
+  evenness=round(evenness_scores,3),
+  timepoint=ifelse(grepl("A$",names(shannon_scores)),"T1","T2"),
+  patient=gsub("KINGCO-007-","",gsub("[AB]$","",names(shannon_scores)))
+)
+
+cat("T1 means - Shannon:", round(mean(div_df$shannon[div_df$timepoint=="T1"]),3),
+    "| Richness:", round(mean(div_df$richness[div_df$timepoint=="T1"]),1),
+    "| Evenness:", round(mean(div_df$evenness[div_df$timepoint=="T1"]),3),"\n")
+cat("T2 means - Shannon:", round(mean(div_df$shannon[div_df$timepoint=="T2"]),3),
+    "| Richness:", round(mean(div_df$richness[div_df$timepoint=="T2"]),1),
+    "| Evenness:", round(mean(div_df$evenness[div_df$timepoint=="T2"]),3),"\n")
+
+# Unclassified fraction vs Shannon correlation
+unclassified <- poirot[poirot$clade_name=="UNCLASSIFIED",]
+unclassified_vec <- as.numeric(unclassified[,2:11])
+names(unclassified_vec) <- colnames(unclassified)[2:11]
+cor_result <- cor.test(unclassified_vec, shannon_scores, method="spearman", exact=FALSE)
+cat("\nUnclassified fraction vs Shannon - rho:",
+    round(cor_result$estimate,3), "p:", round(cor_result$p.value,4),"\n")
+
+# Within vs between patient distance ratio
+within_dists <- sapply(1:nrow(pairs), function(i) dist_mat[pairs$T1[i],pairs$T2[i]])
+between_dists <- c()
+for(i in 1:nrow(pairs)) for(j in 1:nrow(pairs)) {
+  if(i!=j) between_dists <- c(between_dists, dist_mat[pairs$T1[i],pairs$T1[j]])
+}
+cat("\nMean within-patient distance:", round(mean(within_dists),3),"\n")
+cat("Mean between-patient distance:", round(mean(between_dists),3),"\n")
+cat("Ratio (between/within):", round(mean(between_dists)/mean(within_dists),2),"x\n")
+
+# ESKAPE pathogen check
+pathogens <- c("Clostridioides_difficile","Klebsiella_pneumoniae",
+               "Enterococcus_faecium","Staphylococcus_aureus",
+               "Acinetobacter_baumannii","Pseudomonas_aeruginosa")
+cat("\n=== ESKAPE pathogen check ===\n")
+for(p in pathogens) {
+  hits <- species[grep(p, species$clade_name, ignore.case=TRUE),]
+  if(nrow(hits)>0) {
+    cat(p,"FOUND - T1 samples:",
+        sum(as.numeric(hits[,pairs$T1])>0),
+        "| T2 samples:",
+        sum(as.numeric(hits[,pairs$T2])>0),"\n")
+  } else cat(p,": not detected\n")
+}
+
+# Colonisers and extinctions
+cat("\n=== Colonisers and extinctions ===\n")
+for(i in 1:nrow(pairs)) {
+  T1_present <- species$clade_name[species[,pairs$T1[i]]>0]
+  T2_present <- species$clade_name[species[,pairs$T2[i]]>0]
+  cat(pairs$patient[i],
+      "- Extinctions:", length(setdiff(T1_present,T2_present)),
+      "| New colonisers:", length(setdiff(T2_present,T1_present)),"\n")
+}
