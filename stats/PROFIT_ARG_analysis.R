@@ -133,3 +133,65 @@ ggsave("/scratch/prj/chmi_rbiome/project/figures/CrossCohort_ARG_burden.pdf",
        p1, width=6, height=6, dpi=300)
 
 cat("\nAnalysis complete\n")
+
+# ============================================================
+# 7. DONOR VS PATIENT COMPARISON
+# ============================================================
+
+# Separate patient and donor folders
+donor_folders <- all_folders[grepl("^d", basename(all_folders))]
+donors <- import_amr(donor_folders, "FMT Donor (healthy)")
+amr_donors <- donors[donors$Element.type == "AMR",]
+
+burden_donors <- amr_donors %>%
+  group_by(folder, group) %>%
+  summarise(
+    total_ARG=n(),
+    plasmid_ARGs=sum(Gene.contig.type=="plasmid", na.rm=TRUE),
+    mge_fraction=round(plasmid_ARGs/total_ARG*100,1),
+    .groups="drop"
+  )
+
+burden_patients <- burden %>%
+  mutate(folder=patient_id, group="PROFIT Patient (chronic)")
+
+burden_all <- rbind(
+  burden_patients[,c("folder","group","total_ARG","mge_fraction")],
+  burden_donors[,c("folder","group","total_ARG","mge_fraction")]
+)
+
+# Statistical tests
+wt_arg <- wilcox.test(
+  burden_all$total_ARG[burden_all$group=="PROFIT Patient (chronic)"],
+  burden_all$total_ARG[burden_all$group=="FMT Donor (healthy)"],
+  exact=FALSE)
+
+wt_mge <- wilcox.test(
+  burden_all$mge_fraction[burden_all$group=="PROFIT Patient (chronic)"],
+  burden_all$mge_fraction[burden_all$group=="FMT Donor (healthy)"],
+  exact=FALSE)
+
+cat("Patient mean ARG:", round(mean(burden_patients$total_ARG),1),
+    "| Donor mean ARG:", round(mean(burden_donors$total_ARG),1), "\n")
+cat("Wilcoxon ARG burden p:", round(wt_arg$p.value,4), "\n")
+cat("Wilcoxon MGE fraction p:", round(wt_mge$p.value,4), "\n")
+
+# Figures
+p_donor1 <- ggplot(burden_all, aes(x=group, y=total_ARG, fill=group)) +
+  geom_boxplot(alpha=0.7, outlier.shape=NA) +
+  geom_jitter(width=0.15, size=2.5, alpha=0.8) +
+  scale_fill_manual(values=c("PROFIT Patient (chronic)"="#E74C3C",
+                              "FMT Donor (healthy)"="#2ECC71")) +
+  theme_bw() +
+  theme(legend.position="none",
+        plot.title=element_text(hjust=0.5, face="bold"),
+        axis.text.x=element_text(size=9)) +
+  labs(title="ARG Burden: PROFIT Patients vs FMT Donors",
+       subtitle="Wilcoxon p=1.0 (ns)",
+       x="", y="Total AMR gene count")
+
+ggsave("/scratch/prj/chmi_rbiome/project/figures/PROFIT_PatientVsDonor_burden.pdf",
+       p_donor1, width=7, height=6, dpi=300)
+
+cat("Donor analysis complete\n")
+
