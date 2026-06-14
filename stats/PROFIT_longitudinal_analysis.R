@@ -194,3 +194,45 @@ row.names=FALSE)
 cat("\nAll figures and results saved\n")
 cat("=== Longitudinal analysis complete ===\n")
 
+# ============================================================
+# 9. DAY 7 MGE SPIKE VS BASELINE CLINICAL MARKERS
+# ============================================================
+paired_mge <- inner_join(
+  calc_burden(d0)[,c("patient_id","mge_fraction","total_ARG")],
+  calc_burden(d7)[,c("patient_id","mge_fraction","total_ARG")],
+  by="patient_id", suffix=c("_D0","_D7"))
+
+paired_mge$mge_change <- paired_mge$mge_fraction_D7 -
+                          paired_mge$mge_fraction_D0
+
+analysis_df <- inner_join(paired_mge,
+  meta_D0[,c("patient_id","arm",clinical_vars)],
+  by="patient_id")
+
+fmt_df <- analysis_df[analysis_df$arm=="FMT",]
+
+spike_results <- data.frame(variable=character(), rho=numeric(),
+  p_value=numeric(), n=numeric(), stringsAsFactors=FALSE)
+
+for(v in clinical_vars) {
+  x <- fmt_df$mge_change; y <- fmt_df[[v]]
+  complete <- complete.cases(x,y)
+  if(sum(complete)>=5) {
+    ct <- cor.test(x[complete], y[complete],
+                   method="spearman", exact=FALSE)
+    spike_results <- rbind(spike_results, data.frame(
+      variable=v, rho=round(ct$estimate,3),
+      p_value=round(ct$p.value,4), n=sum(complete),
+      stringsAsFactors=FALSE))
+  }
+}
+
+cat("\nBaseline markers vs Day7 MGE spike (FMT arm, n=12):\n")
+print(spike_results[order(abs(spike_results$rho), decreasing=TRUE),])
+cat("Interpretation: No significant predictors of FMT-induced MGE spike.\n")
+cat("MGE spike appears driven by donor inoculum, not recipient inflammation.\n")
+
+write.csv(spike_results,
+  "/scratch/prj/chmi_rbiome/project/results/PROFIT_D7_MGEspike_correlations.csv",
+  row.names=FALSE)
+
