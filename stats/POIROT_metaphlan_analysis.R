@@ -404,3 +404,15 @@ for(i in 1:nrow(pairs)) {
       "- Extinctions:", length(setdiff(T1_present,T2_present)),
       "| New colonisers:", length(setdiff(T2_present,T1_present)),"\n")
 }
+
+# ============================================================
+# FINAL ESKAPE FISHER TEST — Complete n=5 paired dataset
+# Includes AKQ001B and AKQ002B (added 2026-06-20)
+# CORRECTED: previous note estimated p≈0.047 — this was
+# speculative and incorrect. Actual result below.
+# ============================================================
+# T1: 0/5 ESKAPE+ | T2: 3/5 ESKAPE+ (AKQ03B, AKQ05B, AKQ014B)
+# Fisher exact test p-value: 0.1667 (NS)
+# Report as directional trend, not significant finding,
+# due to n=5 power constraint
+
