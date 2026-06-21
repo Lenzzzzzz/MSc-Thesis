@@ -330,6 +330,20 @@ p4 <- ggplot(long_df, aes(x=sample_label, y=abundance, fill=species)) +
        x="Sample", y="Relative Abundance (%)",
        fill="Species")
 
+# ============================================================
+# OBSERVED RICHNESS + SHANNON COMBINED FIGURE
+# Postdoc requested observed diversity alongside Shannon
+# Date: 2026-06-20
+# ============================================================
+# Key finding: AKQ005 is the unique outlier for OBSERVED richness
+# (423->281, -142 species) consistent with established mass
+# extinction phenotype (174 extinctions, E.coli/T4SS elimination)
+# AKQ001 is the unique outlier for SHANNON (4.12->3.82 decrease)
+# Divergence between metrics demonstrates richness and evenness
+# capture different ecological dimensions
+# Observed paired Wilcoxon: p=0.4185 (NS)
+# Shannon paired Wilcoxon: p=0.2807 (NS)
+
 ggsave("/scratch/prj/chmi_rbiome/project/figures/POIROT_species_barplot.pdf",
        plot=p4, width=14, height=8, dpi=300)
 
