@@ -116,3 +116,53 @@ ggsave(file.path(fig_path,"PROFIT_p20_vs_p23_metabolic.pdf"),
        p, width=10, height=7, dpi=300)
 cat("Figure saved\n")
 
+library(ggplot2)
+
+fig_path <- "/scratch/prj/chmi_rbiome/project/figures"
+
+comparison <- data.frame(
+  pathway=c("Type IV secretion\n(plasmid transfer)",
+            "Type VI secretion\n(competitor killing)",
+            "Capsule synthesis\n(immune evasion)",
+            "Acid tolerance\n(EvgS-EvgA)",
+            "AcrAB-TolC efflux\n(multidrug resistance)",
+            "MdlAB efflux",
+            "OqxAB efflux",
+            "CAMP resistance\n(PagP)"),
+  p20_Kpneumoniae=c(83.3,100,100,100,100,100,66.67,100),
+  p21_Kquasipneumoniae=c(0,100,100,100,100,100,66.67,100)
+)
+
+df_long <- rbind(
+  data.frame(pathway=comparison$pathway,
+             patient="p20 K. pneumoniae\n(baseline, plasmid blaKPC-2)",
+             completeness=comparison$p20_Kpneumoniae),
+  data.frame(pathway=comparison$pathway,
+             patient="p21 K. quasipneumoniae\n(Day90, chromosomal MDR)",
+             completeness=comparison$p21_Kquasipneumoniae)
+)
+
+p_compare <- ggplot(df_long,
+                     aes(x=reorder(pathway,completeness),
+                         y=completeness, fill=patient)) +
+  geom_bar(stat="identity", position="dodge", alpha=0.85) +
+  geom_hline(yintercept=70, linetype="dashed",
+             colour="grey40", linewidth=0.5) +
+  coord_flip() +
+  scale_fill_manual(values=c(
+    "p20 K. pneumoniae\n(baseline, plasmid blaKPC-2)"="#E74C3C",
+    "p21 K. quasipneumoniae\n(Day90, chromosomal MDR)"="#9B59B6")) +
+  theme_bw() +
+  theme(legend.title=element_blank(),
+        legend.position="bottom",
+        plot.title=element_text(hjust=0.5,face="bold"),
+        plot.subtitle=element_text(hjust=0.5,size=8)) +
+  labs(title="Competitive Klebsiella: p20 vs p21 Metabolic Comparison",
+       subtitle="Near-identical competitive machinery, except T4SS (conjugative transfer) absent in p21",
+       x="", y="Pathway completeness (%)")
+
+ggsave(file.path(fig_path,"p20_vs_p21_Klebsiella_metabolic.pdf"),
+       p_compare, width=10, height=6, dpi=300)
+
+cat("Comparison figure saved\n")
+quit()
