@@ -236,3 +236,42 @@ write.csv(spike_results,
   "/scratch/prj/chmi_rbiome/project/results/PROFIT_D7_MGEspike_correlations.csv",
   row.names=FALSE)
 
+# Scale factor to overlay MGE (0-30%) onto same plot as ARG burden (35-55)
+# Use a scaling transform: MGE_scaled = MGE * 1.8 + 10 roughly maps to ARG range
+scale_factor <- 1.5
+offset <- 10
+
+summary_tp$mge_scaled <- summary_tp$mean_MGE * scale_factor + offset
+
+p_overlay <- ggplot(summary_tp, aes(x=timepoint, group=arm)) +
+  # ARG burden - solid lines
+  geom_line(aes(y=mean_ARG, colour=arm), linewidth=1.3) +
+  geom_point(aes(y=mean_ARG, colour=arm), size=3) +
+  # MGE fraction - dashed lines, scaled to overlay
+  geom_line(aes(y=mge_scaled, colour=arm), linewidth=1.3, linetype="dashed") +
+  geom_point(aes(y=mge_scaled, colour=arm), size=3, shape=17) +
+  # Significance star for FMT Day0->Day7 MGE spike
+  annotate("text", x=2, y=max(summary_tp$mge_scaled)+3,
+           label="**", size=8, colour="#E74C3C") +
+  annotate("text", x=2, y=max(summary_tp$mge_scaled)+6,
+           label="p=0.0054", size=3, colour="#E74C3C") +
+  scale_y_continuous(
+    name="Mean total ARG burden (solid lines)",
+    sec.axis=sec_axis(~(.-offset)/scale_factor,
+                      name="Mean MGE fraction %, dashed lines/triangles")) +
+  scale_colour_manual(values=c("FMT"="#E74C3C","Placebo"="#3498DB")) +
+  theme_bw() +
+  theme(legend.title=element_blank(),
+        plot.title=element_text(hjust=0.5,face="bold"),
+        plot.subtitle=element_text(hjust=0.5,size=9),
+        plot.caption=element_text(size=8,hjust=0.5,face="italic")) +
+  labs(title="PROFIT Longitudinal ARG Burden and Mobile ARG Fraction",
+       subtitle="Solid = total ARG burden | Dashed/triangles = MGE fraction (%)",
+       x="Timepoint",
+       caption="Donors not included — cirrhotic patients only (FMT n=15, Placebo n=6)")
+
+ggsave("/scratch/prj/chmi_rbiome/project/figures/PROFIT_ARG_MGE_overlay.pdf",
+       p_overlay, width=9, height=7, dpi=300)
+
+cat("Overlay figure saved\n")
+
