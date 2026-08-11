@@ -1,2 +1,10 @@
 .RData
 .Rhistory
+POIROT_merged_profiles.tsv
+Rplots.pdf
+lab_notebook/trimmomatic_stats_formatted.txt
+*.RData
+.Rhistory
+*.csv
+*.xlsx
+*.tsv
